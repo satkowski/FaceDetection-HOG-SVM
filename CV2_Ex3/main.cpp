@@ -58,8 +58,7 @@ int main(int argc, const char** argv)
 		}
 		positiveImages.push_back(actualImage);
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
-
-
+		
 		// Calculating the HOG
 		HOGDescriptor actualHogD;
 		actualHogD.winSize = Size(64, 64);
@@ -71,8 +70,37 @@ int main(int argc, const char** argv)
 	}
 
 	// Calculating the HOG of the negativ images
-	for (std::vector<String>::iterator fileName = positiveFileNames.begin(); fileName != positiveFileNames.end(); ++fileName)
+	for (std::vector<String>::iterator fileName = negativeFileNames.begin(); fileName != negativeFileNames.end(); ++fileName)
 	{
+		Mat actualImage = imread(*fileName);
+
+		// Testing if the file is an image
+		if (actualImage.empty())
+		{
+			printf("Couldn't read the image %s\n", *fileName);
+			return -1;
+		}
+		positiveImages.push_back(actualImage);
+		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
+
+		// Choose the random windows and theire size
+		for (int c = 0; c < 500; c++)
+		{
+			int rWidth = (rand() % 190) + 10;
+			Point rPoint = Point(rand() % (actualImage.cols - rWidth), 
+								 rand() % (actualImage.rows - rWidth));
+			// Pick the window out of the image
+			Mat actualWindow = actualImage(Range(rPoint.y, rPoint.y + rWidth), Range(rPoint.x, rPoint.x + rWidth));
+			
+			// Calculating the HOG
+			HOGDescriptor actualHogD;
+			actualHogD.winSize = Size(64, 64);
+			std::vector<float> descriptorsValues;
+			std::vector<Point> locations;
+			actualHogD.compute(actualWindow, descriptorsValues, Size(0, 0), Size(0, 0), locations);
+
+			negativeHOGs.push_back(actualHogD);
+		}
 	}
 	
 }

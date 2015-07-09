@@ -1,4 +1,4 @@
-// -pos=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\testImages\positive -neg=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\testImages\negative
+// -pos=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\trainingImages\positive -neg=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\trainingImages\negative
 
 #include "main.h"
 
@@ -6,8 +6,11 @@ using namespace cv;
 
 int main(int argc, const char** argv)
 {
+#pragma region Argument parsing
+
 	// Creating a keymap for all the arguments that can passed to that programm
 	const String keyMap = "{help h usage ?  |   | show this message}"
+						  "{win window w    | 64  | windowsize for the hog}"
 						  "{pos p positive  |   | path for the positiv images}"
 						  "{neg n negative  |   | path for the negativ images}";
 
@@ -21,9 +24,15 @@ int main(int argc, const char** argv)
 		return 0;
 	}
 
+	int windowSize = parser.get<int>("win");
 	String positivePath = parser.get<String>("pos");
 	String negativePath = parser.get<String>("neg");
 
+#pragma endregion
+
+#pragma region Initialization
+
+	printf("Initialize\n");
 	// Finding all images in both pathes
 	std::vector<String> positiveFileNames, negativeFileNames;
 	glob(positivePath, positiveFileNames);
@@ -43,9 +52,18 @@ int main(int argc, const char** argv)
 	srand(static_cast<unsigned>(time(0)));
 
 	std::vector<Mat> positiveImages, negativeImages;
-	std::vector<HOGDescriptor> positiveHOGs, negativeHOGs;
+	Mat trainingLabel = Mat(1, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT, CV_32FC1);
+	Mat trainingData = Mat(1764, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT, CV_32FC1);
+	int trainingCount = 0;
+
+	clock_t beginTime = clock();
+
+#pragma endregion
+
+#pragma region Positive HOG Descriptor
 
 	// Converting the positve images and calculating the HOG
+	std::cout << "Calculate positive HOG Descriptors (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
 	for (std::vector<String>::iterator fileName = positiveFileNames.begin(); fileName != positiveFileNames.end(); ++fileName)
 	{
 		Mat actualImage = imread(*fileName);
@@ -58,7 +76,8 @@ int main(int argc, const char** argv)
 		}
 		positiveImages.push_back(actualImage);
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
-		
+		resize(actualImage, actualImage, Size(64, 64));
+
 		// Calculating the HOG
 		HOGDescriptor actualHogD;
 		actualHogD.winSize = Size(64, 64);
@@ -66,10 +85,19 @@ int main(int argc, const char** argv)
 		std::vector<Point> locations;
 		actualHogD.compute(actualImage, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 
-		positiveHOGs.push_back(actualHogD);
+		Mat descriptorsVector = Mat_<float>(descriptorsValues, true);
+		descriptorsVector.col(0).copyTo(trainingData.col(trainingCount));
+		trainingLabel.at<float>(0, trainingCount) = 1.0;
+		trainingCount++;
 	}
+	std::cout << " Finished (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ")" << std::endl;
+
+#pragma endregion
+
+#pragma region Negative HOG Descriptors
 
 	// Calculating the HOG of the negativ images
+	std::cout << "Calculate negative HOG Descriptors (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
 	for (std::vector<String>::iterator fileName = negativeFileNames.begin(); fileName != negativeFileNames.end(); ++fileName)
 	{
 		Mat actualImage = imread(*fileName);
@@ -80,18 +108,20 @@ int main(int argc, const char** argv)
 			printf("Couldn't read the image %s\n", *fileName);
 			return -1;
 		}
-		positiveImages.push_back(actualImage);
+		negativeImages.push_back(actualImage);
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
 
 		// Choose the random windows and theire size
-		for (int c = 0; c < 500; c++)
+		for (int c = 0; c < RANDOM_PATCH_COUNT; c++)
 		{
 			int rWidth = (rand() % 190) + 10;
-			Point rPoint = Point(rand() % (actualImage.cols - rWidth), 
+			Point rPoint = Point(rand() % (actualImage.cols - rWidth),
 								 rand() % (actualImage.rows - rWidth));
 			// Pick the window out of the image
-			Mat actualWindow = actualImage(Range(rPoint.y, rPoint.y + rWidth), Range(rPoint.x, rPoint.x + rWidth));
-			
+			Mat actualWindow;
+
+			resize(actualImage(Range(rPoint.y, rPoint.y + rWidth), Range(rPoint.x, rPoint.x + rWidth)), actualWindow, Size(64, 64));
+
 			// Calculating the HOG
 			HOGDescriptor actualHogD;
 			actualHogD.winSize = Size(64, 64);
@@ -99,8 +129,34 @@ int main(int argc, const char** argv)
 			std::vector<Point> locations;
 			actualHogD.compute(actualWindow, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 
-			negativeHOGs.push_back(actualHogD);
+			Mat descriptorsVector = Mat_<float>(descriptorsValues, true);
+			descriptorsVector.col(0).copyTo(trainingData.col(trainingCount));
+			trainingLabel.at<float>(0, trainingCount) = -1.0;
+			trainingCount++;
 		}
 	}
+	std::cout << " Finished (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ")" << std::endl;
+
+#pragma endregion
+
+#pragma region SVM Training
 	
+	// Set up SVM's parameters
+	Ptr<ml::SVM> svm = ml::SVM::create();
+	svm->setType(ml::SVM::C_SVC);
+	svm->setKernel(ml::SVM::LINEAR);
+	svm->setTermCriteria(cvTermCriteria(CV_TERMCRIT_ITER, 100000, 1e-6));
+	Ptr<ml::TrainData> tData = ml::TrainData::create(trainingData, ml::SampleTypes::COL_SAMPLE, trainingLabel);
+
+	std::cout << "Start SVM training (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
+	svm->train(tData);
+	std::cout << " Finished (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ")" << std::endl;
+
+	svm->save("SVM_MARC");
+
+#pragma endregion
+
+	//Mat query; // input, 1channel, 1 row (apply reshape(1,1) if nessecary)
+	//Mat res;   // output
+	//svm->predict(query, res);
 }

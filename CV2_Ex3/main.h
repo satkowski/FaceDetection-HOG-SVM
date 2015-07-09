@@ -13,6 +13,7 @@
 #include <vector>
 
 #define RANDOM_PATCH_COUNT 100
+#define SVM_ITERATIONS 100000
 
 int main(int argc, const char** argv);
 

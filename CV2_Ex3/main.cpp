@@ -51,16 +51,15 @@ int main(int argc, const char** argv)
 	}
 	srand(static_cast<unsigned>(time(0)));
 
-	std::vector<Mat> positiveImages, negativeImages;
-	Mat trainingLabel = Mat(1, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT, CV_32FC1);
-	Mat trainingData = Mat(1764, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT, CV_32FC1);
+	Mat trainingLabel = Mat_<int>(1, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
+	Mat trainingData = Mat_<float>(1764, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
 	int trainingCount = 0;
 
 	clock_t beginTime = clock();
 
 #pragma endregion
 
-#pragma region Positive HOG Descriptor
+#pragma region Positive HOG Descriptors
 
 	// Converting the positve images and calculating the HOG
 	std::cout << "Calculate positive HOG Descriptors (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
@@ -74,7 +73,6 @@ int main(int argc, const char** argv)
 			printf("Couldn't read the image %s\n", *fileName);
 			return -1;
 		}
-		positiveImages.push_back(actualImage);
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
 		resize(actualImage, actualImage, Size(64, 64));
 
@@ -108,13 +106,12 @@ int main(int argc, const char** argv)
 			printf("Couldn't read the image %s\n", *fileName);
 			return -1;
 		}
-		negativeImages.push_back(actualImage);
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
 
 		// Choose the random windows and theire size
 		for (int c = 0; c < RANDOM_PATCH_COUNT; c++)
 		{
-			int rWidth = (rand() % 190) + 10;
+			int rWidth = (rand() % 191) + 10;
 			Point rPoint = Point(rand() % (actualImage.cols - rWidth),
 								 rand() % (actualImage.rows - rWidth));
 			// Pick the window out of the image
@@ -145,7 +142,7 @@ int main(int argc, const char** argv)
 	Ptr<ml::SVM> svm = ml::SVM::create();
 	svm->setType(ml::SVM::C_SVC);
 	svm->setKernel(ml::SVM::LINEAR);
-	svm->setTermCriteria(cvTermCriteria(CV_TERMCRIT_ITER, 100000, 1e-6));
+	svm->setTermCriteria(cvTermCriteria(CV_TERMCRIT_ITER, SVM_ITERATIONS, 1e-6));
 	Ptr<ml::TrainData> tData = ml::TrainData::create(trainingData, ml::SampleTypes::COL_SAMPLE, trainingLabel);
 
 	std::cout << "Start SVM training (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";

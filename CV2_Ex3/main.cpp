@@ -74,11 +74,11 @@ int main(int argc, const char** argv)
 			return -1;
 		}
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
-		resize(actualImage, actualImage, Size(64, 64));
+		resize(actualImage, actualImage, Size(windowSize, windowSize));
 
 		// Calculating the HOG
 		HOGDescriptor actualHogD;
-		actualHogD.winSize = Size(64, 64);
+		actualHogD.winSize = Size(windowSize, windowSize);
 		std::vector<float> descriptorsValues;
 		std::vector<Point> locations;
 		actualHogD.compute(actualImage, descriptorsValues, Size(0, 0), Size(0, 0), locations);
@@ -117,11 +117,11 @@ int main(int argc, const char** argv)
 			// Pick the window out of the image
 			Mat actualWindow;
 
-			resize(actualImage(Range(rPoint.y, rPoint.y + rWidth), Range(rPoint.x, rPoint.x + rWidth)), actualWindow, Size(64, 64));
+			resize(actualImage(Range(rPoint.y, rPoint.y + rWidth), Range(rPoint.x, rPoint.x + rWidth)), actualWindow, Size(windowSize, windowSize));
 
 			// Calculating the HOG
 			HOGDescriptor actualHogD;
-			actualHogD.winSize = Size(64, 64);
+			actualHogD.winSize = Size(windowSize, windowSize);
 			std::vector<float> descriptorsValues;
 			std::vector<Point> locations;
 			actualHogD.compute(actualWindow, descriptorsValues, Size(0, 0), Size(0, 0), locations);
@@ -143,6 +143,7 @@ int main(int argc, const char** argv)
 	svm->setType(ml::SVM::C_SVC);
 	svm->setKernel(ml::SVM::LINEAR);
 	svm->setTermCriteria(cvTermCriteria(CV_TERMCRIT_ITER, SVM_ITERATIONS, 1e-6));
+	// Create the Trainingdata
 	Ptr<ml::TrainData> tData = ml::TrainData::create(trainingData, ml::SampleTypes::COL_SAMPLE, trainingLabel);
 
 	std::cout << "Start SVM training (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";

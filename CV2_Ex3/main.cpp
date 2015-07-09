@@ -1,4 +1,5 @@
 // -pos=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\trainingImages\positive -neg=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\trainingImages\negative
+// -svm=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\CV2_Ex3\SVM_MARC.yaml -pos=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\testImages\positive -neg=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\testImages\negative
 
 #include "main.h"
 
@@ -11,8 +12,9 @@ int main(int argc, const char** argv)
 	// Creating a keymap for all the arguments that can passed to that programm
 	const String keyMap = "{help h usage ?  |   | show this message}"
 						  "{win window w    | 64  | windowsize for the hog}"
-						  "{pos p positive  |   | path for the positiv images}"
-						  "{neg n negative  |   | path for the negativ images}";
+						  "{svm |   | path to the trained svm}"
+						  "{pos p positive  |   | path for the positiv images\n * trainimages if there is no SVM path\n * testimages otherwise}"
+						  "{neg n negative  |   | path for the negativ images\n * trainimages if there is no SVM path\n * testimages otherwise}";
 
 	// Reading the calling arguments
 	CommandLineParser parser(argc, argv, keyMap);
@@ -25,29 +27,58 @@ int main(int argc, const char** argv)
 	}
 
 	int windowSize = parser.get<int>("win");
+	String svmPath = parser.get<String>("svm");
 	String positivePath = parser.get<String>("pos");
 	String negativePath = parser.get<String>("neg");
 
+	if (positivePath == "")
+	{
+		printf("There is no positivePath\n");
+		return -1;
+	}
+	if (negativePath == "")
+	{
+		printf("There is no negativePath\n");
+		return -1;
+	}
+
 #pragma endregion
 
+	if (svmPath == "")
+	{
+		svmPath = trainSVM(&positivePath, &negativePath, windowSize);
+		if (svmPath == "")
+			return -1;
+	}
+
+
+
+	//Mat query; // input, 1channel, 1 row (apply reshape(1,1) if nessecary)
+	//Mat res;   // output
+	//svm->predict(query, res);
+}
+
+
+String trainSVM(String* positiveTrainPath, String* negativeTrainPath, int windowSize)
+{
 #pragma region Initialization
 
 	printf("Initialize\n");
 	// Finding all images in both pathes
 	std::vector<String> positiveFileNames, negativeFileNames;
-	glob(positivePath, positiveFileNames);
-	glob(negativePath, negativeFileNames);
+	glob(*positiveTrainPath, positiveFileNames);
+	glob(*negativeTrainPath, negativeFileNames);
 
 	// Testing if there are images in the pathes
 	if (positiveFileNames.size() <= 0)
 	{
-		printf("There are no images in %s\n", positivePath);
-		return -1;
+		printf("There are no images in %s\n", *positiveTrainPath);
+		return "";
 	}
 	if (negativeFileNames.size() <= 0)
 	{
-		printf("There are no images in %s\n", negativePath);
-		return -1;
+		printf("There are no images in %s\n", *negativeTrainPath);
+		return "";
 	}
 	srand(static_cast<unsigned>(time(0)));
 
@@ -71,7 +102,7 @@ int main(int argc, const char** argv)
 		if (actualImage.empty())
 		{
 			printf("Couldn't read the image %s\n", *fileName);
-			return -1;
+			return "";
 		}
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
 		resize(actualImage, actualImage, Size(windowSize, windowSize));
@@ -104,7 +135,7 @@ int main(int argc, const char** argv)
 		if (actualImage.empty())
 		{
 			printf("Couldn't read the image %s\n", *fileName);
-			return -1;
+			return "";
 		}
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
 
@@ -137,7 +168,7 @@ int main(int argc, const char** argv)
 #pragma endregion
 
 #pragma region SVM Training
-	
+
 	// Set up SVM's parameters
 	Ptr<ml::SVM> svm = ml::SVM::create();
 	svm->setType(ml::SVM::C_SVC);
@@ -150,11 +181,44 @@ int main(int argc, const char** argv)
 	svm->train(tData);
 	std::cout << " Finished (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ")" << std::endl;
 
-	svm->save("SVM_MARC");
+	svm->save(SVM_OUTPUT_NAME);
 
 #pragma endregion
 
-	//Mat query; // input, 1channel, 1 row (apply reshape(1,1) if nessecary)
-	//Mat res;   // output
-	//svm->predict(query, res);
+	return SVM_OUTPUT_NAME;
+}
+
+void testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
+{
+#pragma region Initialization
+
+	printf("Initialize\n");
+	// Finding all images in both pathes
+	std::vector<String> positiveFileNames, negativeFileNames;
+	glob(*positiveTestPath, positiveFileNames);
+	glob(*negativTestPath, negativeFileNames);
+
+	// Testing if there are images in the pathes
+	if (positiveFileNames.size() <= 0)
+	{
+		printf("There are no images in %s\n", *positiveTestPath);
+		return;
+	}
+	if (negativeFileNames.size() <= 0)
+	{
+		printf("There are no images in %s\n", *negativTestPath);
+		return;
+	}
+	srand(static_cast<unsigned>(time(0)));
+
+	Mat trainingLabel = Mat_<int>(1, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
+	Mat trainingData = Mat_<float>(1764, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
+	int trainingCount = 0;
+
+	Ptr<ml::SVM> svm = ml::SVM::create();
+	svm->load<ml::SVM>(*svmPath);
+
+	clock_t beginTime = clock();
+
+#pragma endregion
 }

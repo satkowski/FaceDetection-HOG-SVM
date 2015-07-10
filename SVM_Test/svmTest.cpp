@@ -72,12 +72,12 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 	allFileNames.insert(allFileNames.end(), positiveFileNames.begin(), positiveFileNames.end());
 	allFileNames.insert(allFileNames.end(), negativeFileNames.begin(), negativeFileNames.end());
 
-	Mat testData = Mat_<float>(DESCRIPTOR_SIZE, allFileNames.size());
+	//Mat testData = Mat_<float>(DESCRIPTOR_SIZE, allFileNames.size());
+	Mat testData = Mat_<float>(allFileNames.size(), DESCRIPTOR_SIZE);
 	int testCount = 0;
 
 	Ptr<ml::SVM> svm = ml::SVM::create();
-	svm->load<ml::SVM>(*svmPath);
-
+	svm = svm->load<ml::SVM>(*svmPath);
 
 	clock_t beginTime = clock();
 
@@ -108,8 +108,11 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 		std::vector<Point> locations;
 		actualHogD.compute(actualImage, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 
+		// I need to transpose to get every sample in a column and not in a row
 		Mat descriptorsVector = Mat_<float>(descriptorsValues, true);
-		descriptorsVector.col(0).copyTo(testData.col(testCount));
+		transpose(descriptorsVector, descriptorsVector);
+		descriptorsVector.row(0).copyTo(testData.row(testCount));
+		//descriptorsVector.col(0).copyTo(testData.col(testCount));
 		testCount++;
 
 	}

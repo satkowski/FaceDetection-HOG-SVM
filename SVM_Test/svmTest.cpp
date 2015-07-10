@@ -84,6 +84,11 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 		return false;
 	}
 
+	HOGDescriptor hogD;
+	hogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
+	std::vector<float> descriptorsValues;
+	std::vector<Point> locations;
+
 	clock_t beginTime = clock();
 
 #pragma endregion
@@ -107,11 +112,7 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 		resize(actualImage, actualImage, Size(WINDOW_SIZE, WINDOW_SIZE));
 
 		// Calculating the HOG
-		HOGDescriptor actualHogD;
-		actualHogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
-		std::vector<float> descriptorsValues;
-		std::vector<Point> locations;
-		actualHogD.compute(actualImage, descriptorsValues, Size(0, 0), Size(0, 0), locations);
+		hogD.compute(actualImage, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 
 		// I need to transpose to get every sample in a column and not in a row
 		Mat descriptorsVector = Mat_<float>(descriptorsValues, true);

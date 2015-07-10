@@ -6,5 +6,6 @@
 #define SVM_OUTPUT_NAME "SVM_MARC.yaml"
 #define WINDOW_SIZE 64
 #define DESCRIPTOR_SIZE 1764
+#define DOWNSCALE_FACTOR 0.8
 
 #endif // SVMDEFINES_H

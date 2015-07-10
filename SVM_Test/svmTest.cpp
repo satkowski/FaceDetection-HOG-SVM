@@ -125,9 +125,18 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 
 	Mat results;
 	svm->predict(testData, results);
-	int fPos = 0, fNeg = 0, uDec = 0;
+	int fPos = 0, fNeg = 0;
 
-	std::cout << results << std::endl;
+	for (int c = 0; c < allFileNames.size(); c++)
+	{
+		float result = results.at<float>(c, 0);
+		if (c < positiveFileNames.size() && result != 1)
+			fNeg++;
+		else if (c >= positiveFileNames.size() && result != -1)
+			fPos++;
+	}
+	printf("False Positive: %d\n", fPos);
+	printf("False Negative: %d\n", fNeg);
 
 #pragma endregion
 

@@ -65,7 +65,6 @@ bool trainSVM(String* positiveTrainPath, String* negativeTrainPath)
 	{
 		printf("There are no images in %s\n", *negativeTrainPath);
 		return false;
-	}
 
 	Mat trainingLabel = Mat_<int>(1, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
 	Mat trainingData = Mat_<float>(DESCRIPTOR_SIZE, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);

@@ -30,7 +30,7 @@
     <ProjectGuid>{7D834085-7B3D-460D-B7AF-A894CFA8B17B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SVM_Face_Detection</RootNamespace>
-    <ProjectName>SVM_DETECTOR</ProjectName>
+    <ProjectName>SVM_Detector</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

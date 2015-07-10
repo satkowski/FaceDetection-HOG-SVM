@@ -78,6 +78,11 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 
 	Ptr<ml::SVM> svm = ml::SVM::create();
 	svm = svm->load<ml::SVM>(*svmPath);
+	if (!svm->isTrained())
+	{
+		printf("The SVM isn't trained through this path: %s\n", *svmPath);
+		return false;
+	}
 
 	clock_t beginTime = clock();
 

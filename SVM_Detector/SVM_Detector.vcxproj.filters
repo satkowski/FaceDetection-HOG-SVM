@@ -18,12 +18,12 @@
     <ClInclude Include="..\SVM_Commen\svmDefines.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="svmFaceDetection.h">
+    <ClInclude Include="svmDetector.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="svmFaceDetection.cpp">
+    <ClCompile Include="svmDetector.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

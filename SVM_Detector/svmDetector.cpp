@@ -1,5 +1,5 @@
 // -svm=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\SVM_Train\SVM_MARC.yaml -img=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\testImages\detection\t1.jpg
-#include "svmFaceDetection.h"
+#include "svmDetector.h"
 
 using namespace cv;
 

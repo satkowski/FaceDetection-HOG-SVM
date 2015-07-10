@@ -1,5 +1,5 @@
-#ifndef SVMFACEDETECTION_H
-#define SVMFACEDETECTION_H
+#ifndef SVMDETECTOR_H
+#define SVMDETECTOR_H
 
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -18,4 +18,4 @@ int main(int argc, const char** argv);
 
 cv::Mat faceDetection(cv::String* imagePath, cv::String* svmPath);
 
-#endif // SVMFACEDETECTION_H
+#endif // SVMDETECTOR_H

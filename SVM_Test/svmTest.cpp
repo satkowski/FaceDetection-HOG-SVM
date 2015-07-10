@@ -125,22 +125,9 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 
 	Mat results;
 	svm->predict(testData, results);
-	int fPos = 0, fNeg = 0;
+	int fPos = 0, fNeg = 0, uDec = 0;
 
-	for (int c = 0; c < 200; c++)
-	{
-		float result = results.at<float>(c, 0);
-
-		if (c < 100)
-			if (result != 1)
-				++fNeg;
-			else
-				if (result != -1)
-					++fPos;
-	}
-
-	std::cout << "False positives: " << fPos << std::endl;
-	std::cout << "False negatives: " << fNeg << std::endl;
+	std::cout << results << std::endl;
 
 #pragma endregion
 

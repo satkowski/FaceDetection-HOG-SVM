@@ -101,7 +101,7 @@ bool trainSVM(String* positiveTrainPath, String* negativeTrainPath)
 
 		Mat descriptorsVector = Mat_<float>(descriptorsValues, true);
 		descriptorsVector.col(0).copyTo(trainingData.col(trainingCount));
-		trainingLabel.at<float>(0, trainingCount) = 1.0;
+		trainingLabel.at<int>(0, trainingCount) = 1;
 		trainingCount++;
 	}
 	std::cout << " Finished (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ")" << std::endl;
@@ -144,7 +144,7 @@ bool trainSVM(String* positiveTrainPath, String* negativeTrainPath)
 
 			Mat descriptorsVector = Mat_<float>(descriptorsValues, true);
 			descriptorsVector.col(0).copyTo(trainingData.col(trainingCount));
-			trainingLabel.at<float>(0, trainingCount) = -1.0;
+			trainingLabel.at<int>(0, trainingCount) = -1;
 			trainingCount++;
 		}
 	}

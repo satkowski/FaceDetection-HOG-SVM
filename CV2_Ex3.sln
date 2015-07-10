@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVM_Test", "SVM_Test\SVM_Te
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVM_Train", "SVM_Train\SVM_Train.vcxproj", "{94BCAC99-2DD5-45B7-B43E-44CE0F107304}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVM_Face_Detection", "SVM_Face_Detection\SVM_Face_Detection.vcxproj", "{7D834085-7B3D-460D-B7AF-A894CFA8B17B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -41,6 +43,18 @@ Global
 		{94BCAC99-2DD5-45B7-B43E-44CE0F107304}.Release|Win32.Build.0 = Release|Win32
 		{94BCAC99-2DD5-45B7-B43E-44CE0F107304}.Release|x64.ActiveCfg = Release|x64
 		{94BCAC99-2DD5-45B7-B43E-44CE0F107304}.Release|x64.Build.0 = Release|x64
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Debug|Win32.Build.0 = Debug|Win32
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Debug|x64.ActiveCfg = Debug|x64
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Debug|x64.Build.0 = Debug|x64
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Release|Win32.ActiveCfg = Release|Win32
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Release|Win32.Build.0 = Release|Win32
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Release|x64.ActiveCfg = Release|x64
+		{7D834085-7B3D-460D-B7AF-A894CFA8B17B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

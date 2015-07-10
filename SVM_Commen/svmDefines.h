@@ -1,0 +1,9 @@
+#ifndef SVMDEFINES_H
+#define SVMDEFINES_H
+
+#define RANDOM_PATCH_COUNT 100
+#define SVM_ITERATIONS 100000
+#define SVM_OUTPUT_NAME "SVM_MARC.yaml"
+#define WINDOW_SIZE 64
+
+#endif // SVMDEFINES_H

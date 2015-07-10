@@ -1,7 +1,5 @@
 // -pos=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\trainingImages\positive -neg=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\trainingImages\negative
-// -svm=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\CV2_Ex3\SVM_MARC.yaml -pos=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\testImages\positive -neg=D:\Dokumente\Workspaces\C++_VS\CV2_Ex3\data\testImages\negative
-
-#include "main.h"
+#include "svmTraining.h"
 
 using namespace cv;
 
@@ -11,10 +9,8 @@ int main(int argc, const char** argv)
 
 	// Creating a keymap for all the arguments that can passed to that programm
 	const String keyMap = "{help h usage ?  |   | show this message}"
-						  "{win window w    | 64  | windowsize for the hog}"
-						  "{svm |   | path to the trained svm}"
-						  "{pos p positive  |   | path for the positiv images\n * trainimages if there is no SVM path\n * testimages otherwise}"
-						  "{neg n negative  |   | path for the negativ images\n * trainimages if there is no SVM path\n * testimages otherwise}";
+						  "{pos p positive  |   | path for the positiv trainimages}"
+						  "{neg n negative  |   | path for the negativ trainimages}";
 
 	// Reading the calling arguments
 	CommandLineParser parser(argc, argv, keyMap);
@@ -26,8 +22,6 @@ int main(int argc, const char** argv)
 		return 0;
 	}
 
-	int windowSize = parser.get<int>("win");
-	String svmPath = parser.get<String>("svm");
 	String positivePath = parser.get<String>("pos");
 	String negativePath = parser.get<String>("neg");
 
@@ -44,22 +38,14 @@ int main(int argc, const char** argv)
 
 #pragma endregion
 
-	if (svmPath == "")
-	{
-		svmPath = trainSVM(&positivePath, &negativePath, windowSize);
-		if (svmPath == "")
-			return -1;
-	}
-
-
-
-	//Mat query; // input, 1channel, 1 row (apply reshape(1,1) if nessecary)
-	//Mat res;   // output
-	//svm->predict(query, res);
+	bool train = trainSVM(&positivePath, &negativePath);
+	if (!train)
+		return -1;
+	return 0;
 }
 
 
-String trainSVM(String* positiveTrainPath, String* negativeTrainPath, int windowSize)
+bool trainSVM(String* positiveTrainPath, String* negativeTrainPath)
 {
 #pragma region Initialization
 
@@ -73,14 +59,13 @@ String trainSVM(String* positiveTrainPath, String* negativeTrainPath, int window
 	if (positiveFileNames.size() <= 0)
 	{
 		printf("There are no images in %s\n", *positiveTrainPath);
-		return "";
+		return false;
 	}
 	if (negativeFileNames.size() <= 0)
 	{
 		printf("There are no images in %s\n", *negativeTrainPath);
-		return "";
+		return false;
 	}
-	srand(static_cast<unsigned>(time(0)));
 
 	Mat trainingLabel = Mat_<int>(1, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
 	Mat trainingData = Mat_<float>(1764, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
@@ -102,14 +87,14 @@ String trainSVM(String* positiveTrainPath, String* negativeTrainPath, int window
 		if (actualImage.empty())
 		{
 			printf("Couldn't read the image %s\n", *fileName);
-			return "";
+			return false;
 		}
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
-		resize(actualImage, actualImage, Size(windowSize, windowSize));
+		resize(actualImage, actualImage, Size(WINDOW_SIZE, WINDOW_SIZE));
 
 		// Calculating the HOG
 		HOGDescriptor actualHogD;
-		actualHogD.winSize = Size(windowSize, windowSize);
+		actualHogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
 		std::vector<float> descriptorsValues;
 		std::vector<Point> locations;
 		actualHogD.compute(actualImage, descriptorsValues, Size(0, 0), Size(0, 0), locations);
@@ -135,7 +120,7 @@ String trainSVM(String* positiveTrainPath, String* negativeTrainPath, int window
 		if (actualImage.empty())
 		{
 			printf("Couldn't read the image %s\n", *fileName);
-			return "";
+			return false;
 		}
 		cvtColor(actualImage, actualImage, CV_BGR2GRAY);
 
@@ -148,11 +133,11 @@ String trainSVM(String* positiveTrainPath, String* negativeTrainPath, int window
 			// Pick the window out of the image
 			Mat actualWindow;
 
-			resize(actualImage(Range(rPoint.y, rPoint.y + rWidth), Range(rPoint.x, rPoint.x + rWidth)), actualWindow, Size(windowSize, windowSize));
+			resize(actualImage(Range(rPoint.y, rPoint.y + rWidth), Range(rPoint.x, rPoint.x + rWidth)), actualWindow, Size(WINDOW_SIZE, WINDOW_SIZE));
 
 			// Calculating the HOG
 			HOGDescriptor actualHogD;
-			actualHogD.winSize = Size(windowSize, windowSize);
+			actualHogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
 			std::vector<float> descriptorsValues;
 			std::vector<Point> locations;
 			actualHogD.compute(actualWindow, descriptorsValues, Size(0, 0), Size(0, 0), locations);
@@ -185,40 +170,5 @@ String trainSVM(String* positiveTrainPath, String* negativeTrainPath, int window
 
 #pragma endregion
 
-	return SVM_OUTPUT_NAME;
-}
-
-void testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
-{
-#pragma region Initialization
-
-	printf("Initialize\n");
-	// Finding all images in both pathes
-	std::vector<String> positiveFileNames, negativeFileNames;
-	glob(*positiveTestPath, positiveFileNames);
-	glob(*negativTestPath, negativeFileNames);
-
-	// Testing if there are images in the pathes
-	if (positiveFileNames.size() <= 0)
-	{
-		printf("There are no images in %s\n", *positiveTestPath);
-		return;
-	}
-	if (negativeFileNames.size() <= 0)
-	{
-		printf("There are no images in %s\n", *negativTestPath);
-		return;
-	}
-	srand(static_cast<unsigned>(time(0)));
-
-	Mat trainingLabel = Mat_<int>(1, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
-	Mat trainingData = Mat_<float>(1764, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
-	int trainingCount = 0;
-
-	Ptr<ml::SVM> svm = ml::SVM::create();
-	svm->load<ml::SVM>(*svmPath);
-
-	clock_t beginTime = clock();
-
-#pragma endregion
+	return true;
 }

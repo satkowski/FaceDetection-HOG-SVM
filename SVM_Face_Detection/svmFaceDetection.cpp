@@ -71,8 +71,8 @@ Mat faceDetection(String* imagePath, String* svmPath)
 	// Vector that saves the Point in whicht the match was and the preditcion value and the scale factor
 	std::vector<std::pair<Point, Vec2f> > postivPatches;
 
-	HOGDescriptor HogD;
-	HogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
+	HOGDescriptor hogD;
+	hogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
 	std::vector<float> descriptorsValues;
 	std::vector<Point> locations;
 
@@ -94,7 +94,7 @@ Mat faceDetection(String* imagePath, String* svmPath)
 				// Take the patch from the image
 				Mat imagePatch = scaledImage(Range(cY, cY + WINDOW_SIZE), Range(cX, cX + WINDOW_SIZE));
 				// Calculating the HOG
-				HogD.compute(imagePatch, descriptorsValues, Size(0, 0), Size(0, 0), locations);
+				hogD.compute(imagePatch, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 				// Predict with the SVM
 				float prediction = svm->predict(descriptorsValues);
 

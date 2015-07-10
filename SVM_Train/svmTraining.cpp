@@ -68,7 +68,7 @@ bool trainSVM(String* positiveTrainPath, String* negativeTrainPath)
 	}
 
 	Mat trainingLabel = Mat_<int>(1, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
-	Mat trainingData = Mat_<float>(1764, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
+	Mat trainingData = Mat_<float>(DESCRIPTOR_SIZE, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
 	int trainingCount = 0;
 
 	clock_t beginTime = clock();

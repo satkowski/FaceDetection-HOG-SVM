@@ -5,5 +5,6 @@
 #define SVM_ITERATIONS 100000
 #define SVM_OUTPUT_NAME "SVM_MARC.yaml"
 #define WINDOW_SIZE 64
+#define DESCRIPTOR_SIZE 1764
 
 #endif // SVMDEFINES_H

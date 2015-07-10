@@ -72,7 +72,7 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 	allFileNames.insert(allFileNames.end(), positiveFileNames.begin(), positiveFileNames.end());
 	allFileNames.insert(allFileNames.end(), negativeFileNames.begin(), negativeFileNames.end());
 
-	Mat testData = Mat_<float>(1764, allFileNames.size());
+	Mat testData = Mat_<float>(DESCRIPTOR_SIZE, allFileNames.size());
 	int testCount = 0;
 
 	Ptr<ml::SVM> svm = ml::SVM::create();

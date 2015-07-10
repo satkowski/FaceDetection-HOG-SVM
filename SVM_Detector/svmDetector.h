@@ -17,5 +17,7 @@
 int main(int argc, const char** argv);
 
 cv::Mat faceDetection(cv::String* imagePath, cv::String* svmPath);
+// Sort from the lowest to the highest
+bool sortPreditcionVector(std::pair<cv::Point, cv::Vec2f> left, std::pair<cv::Point, cv::Vec2f> right);
 
 #endif // SVMDETECTOR_H

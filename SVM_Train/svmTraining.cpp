@@ -71,6 +71,11 @@ bool trainSVM(String* positiveTrainPath, String* negativeTrainPath)
 	Mat trainingData = Mat_<float>(DESCRIPTOR_SIZE, positiveFileNames.size() + negativeFileNames.size() * RANDOM_PATCH_COUNT);
 	int trainingCount = 0;
 
+	HOGDescriptor hogD;
+	hogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
+	std::vector<float> descriptorsValues;
+	std::vector<Point> locations;
+
 	clock_t beginTime = clock();
 
 #pragma endregion
@@ -93,11 +98,7 @@ bool trainSVM(String* positiveTrainPath, String* negativeTrainPath)
 		resize(actualImage, actualImage, Size(WINDOW_SIZE, WINDOW_SIZE));
 
 		// Calculating the HOG
-		HOGDescriptor actualHogD;
-		actualHogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
-		std::vector<float> descriptorsValues;
-		std::vector<Point> locations;
-		actualHogD.compute(actualImage, descriptorsValues, Size(0, 0), Size(0, 0), locations);
+		hogD.compute(actualImage, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 
 		Mat descriptorsVector = Mat_<float>(descriptorsValues, true);
 		descriptorsVector.col(0).copyTo(trainingData.col(trainingCount));
@@ -136,11 +137,7 @@ bool trainSVM(String* positiveTrainPath, String* negativeTrainPath)
 			resize(actualImage(Range(rPoint.y, rPoint.y + rWidth), Range(rPoint.x, rPoint.x + rWidth)), actualWindow, Size(WINDOW_SIZE, WINDOW_SIZE));
 
 			// Calculating the HOG
-			HOGDescriptor actualHogD;
-			actualHogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
-			std::vector<float> descriptorsValues;
-			std::vector<Point> locations;
-			actualHogD.compute(actualWindow, descriptorsValues, Size(0, 0), Size(0, 0), locations);
+			hogD.compute(actualWindow, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 
 			Mat descriptorsVector = Mat_<float>(descriptorsValues, true);
 			descriptorsVector.col(0).copyTo(trainingData.col(trainingCount));

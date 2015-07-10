@@ -102,9 +102,10 @@ Mat faceDetection(String* imagePath, String* svmPath)
 					postivPatches.push_back(std::pair<Point, Vec2f>(Point(cX, cY), Vec2f(prediction, scaleFactor)));
 			}
 		}
-		// Donwscale the image and save the new downscalefactor
+		// Donwscale the image
 		resize(scaledImage, scaledImage, Size(scaledImage.cols * DOWNSCALE_FACTOR, scaledImage.rows * DOWNSCALE_FACTOR));
-		scaleFactor *= DOWNSCALE_FACTOR;
+		// Save the new scalfactor (zoomfactor)
+		scaleFactor /= DOWNSCALE_FACTOR;
 	}
 	std::cout << " Finished (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ")" << std::endl;
 
@@ -116,9 +117,11 @@ Mat faceDetection(String* imagePath, String* svmPath)
 	std::cout << "Begin the drawing (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
 	for (std::vector<std::pair<Point, Vec2f> >::iterator patches = postivPatches.begin(); patches != postivPatches.end(); ++patches)
 	{
-		rectangle(outputImage, 
-				  Rect(patches->first / patches->second[1], Size(WINDOW_SIZE * patches->second[1], WINDOW_SIZE * patches->second[1])),
-				  Scalar(0, 0, 255));
+		// Get the upper-left und down-right point for the rect 
+		Point rectPointUL = patches->first * patches->second[1];
+		Point rectPointDR = rectPointUL + (Point(64, 64) * patches->second[1]);
+		// Draw the rectangle in the image
+		rectangle(outputImage, rectPointUL, rectPointDR, Scalar(0, 0, 255));
 	}
 	std::cout << " Finished (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ")" << std::endl;
 

@@ -71,6 +71,11 @@ Mat faceDetection(String* imagePath, String* svmPath)
 	// Vector that saves the Point in whicht the match was and the preditcion value and the scale factor
 	std::vector<std::pair<Point, Vec2f> > postivPatches;
 
+	HOGDescriptor HogD;
+	HogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
+	std::vector<float> descriptorsValues;
+	std::vector<Point> locations;
+
 	clock_t beginTime = clock();
 
 #pragma endregion
@@ -86,20 +91,15 @@ Mat faceDetection(String* imagePath, String* svmPath)
 		{
 			for (int cX = 0; cX < (scaledImage.cols - WINDOW_SIZE); cX += 5)
 			{
+				// Take the patch from the image
 				Mat imagePatch = scaledImage(Range(cY, cY + WINDOW_SIZE), Range(cX, cX + WINDOW_SIZE));
-
 				// Calculating the HOG
-				HOGDescriptor actualHogD;
-				actualHogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
-				std::vector<float> descriptorsValues;
-				std::vector<Point> locations;
-				actualHogD.compute(imagePatch, descriptorsValues, Size(0, 0), Size(0, 0), locations);
-
+				HogD.compute(imagePatch, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 				// Predict with the SVM
 				float prediction = svm->predict(descriptorsValues);
 
 				if (prediction == 1)
-					postivPatches.push_back(std::pair<Point, Point_<float> >(Point(cY, cX), Vec2f(prediction, scaleFactor)));
+					postivPatches.push_back(std::pair<Point, Vec2f>(Point(cX, cY), Vec2f(prediction, scaleFactor)));
 			}
 		}
 		// Donwscale the image and save the new downscalefactor
@@ -116,7 +116,9 @@ Mat faceDetection(String* imagePath, String* svmPath)
 	std::cout << "Begin the drawing (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
 	for (std::vector<std::pair<Point, Vec2f> >::iterator patches = postivPatches.begin(); patches != postivPatches.end(); ++patches)
 	{
-		rectangle(outputImage, Rect(patches->first, Size(WINDOW_SIZE * patches->second[1], WINDOW_SIZE * patches->second[1])), Scalar(0, 0, 255));
+		rectangle(outputImage, 
+				  Rect(patches->first / patches->second[1], Size(WINDOW_SIZE * patches->second[1], WINDOW_SIZE * patches->second[1])),
+				  Scalar(0, 0, 255));
 	}
 	std::cout << " Finished (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ")" << std::endl;
 

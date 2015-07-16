@@ -69,26 +69,28 @@ Mat faceDetection(String* imagePath, String* svmPath)
 		return Mat();
 	}
 	// Vector that saves the Point in whicht the match was and the preditcion value and the scale factor
-	std::vector<std::pair<Point, Vec2f> > positivPatches;
+	std::vector<std::pair<Point, Vec2f> > positivePatches;
 
 	HOGDescriptor hogD;
 	hogD.winSize = Size(WINDOW_SIZE, WINDOW_SIZE);
-	std::vector<float> descriptorsValues;
-	std::vector<Point> locations;
 
 	clock_t beginTime = clock();
 
-#pragma endregion
+#pragma endregion 
 
 #pragma region Face Detection
 
 	Mat scaledImage = greyImage;
 	float scaleFactor = 1;
 	std::cout << "Begin the face detection (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
+
 	while (scaledImage.rows >= WINDOW_SIZE && scaledImage.cols >= WINDOW_SIZE)
 	{
+#pragma omp parallel for
 		for (int cY = 0; cY < (scaledImage.rows - WINDOW_SIZE); cY += 5)
 		{
+			std::vector<float> descriptorsValues;
+			std::vector<Point> locations;
 			for (int cX = 0; cX < (scaledImage.cols - WINDOW_SIZE); cX += 5)
 			{
 				// Take the patch from the image
@@ -97,10 +99,11 @@ Mat faceDetection(String* imagePath, String* svmPath)
 				hogD.compute(imagePatch, descriptorsValues, Size(0, 0), Size(0, 0), locations);
 				// Predict with the SVM
 				float rawPrediction = svm->predict(descriptorsValues, noArray(), ml::StatModel::RAW_OUTPUT);
-				float prediction = svm->predict(descriptorsValues);
-
-				if (prediction == 1)
-					positivPatches.push_back(std::pair<Point, Vec2f>(Point(cX, cY), Vec2f(rawPrediction, scaleFactor)));
+#pragma omp critical
+				{
+					if (rawPrediction < 0)
+						positivePatches.push_back(std::pair<Point, Vec2f>(Point(cX, cY), Vec2f(rawPrediction, scaleFactor)));
+				}
 			}
 		}
 		// Donwscale the image
@@ -115,18 +118,18 @@ Mat faceDetection(String* imagePath, String* svmPath)
 #pragma region Draw Boxes in the image
 
 	// Sort the vector
-	std::sort(positivPatches.begin(), positivPatches.end(), sortPreditcionVector);
+	std::sort(positivePatches.begin(), positivePatches.end(), sortPreditcionVector);
 
 	Mat outputImage = inputImage;
 	std::cout << "Begin the drawing (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
-	for (std::vector<std::pair<Point, Vec2f> >::iterator patches = positivPatches.begin(); patches != positivPatches.end(); ++patches)
+	for (std::vector<std::pair<Point, Vec2f> >::iterator patches = positivePatches.begin(); patches != positivePatches.end(); ++patches)
 	{
 		// Get the upper-left und lower-right point for the rect 
 		Point rectPointUL = patches->first * patches->second[1];
 		Point rectPointLR = rectPointUL + (Point(64, 64) * patches->second[1]);
 		// Draw the rectangle in the image
-		if (patches == positivPatches.begin())
-			rectangle(outputImage, rectPointUL, rectPointLR, Scalar(50, 50, 200), 3);
+		if (patches == positivePatches.begin())
+			rectangle(outputImage, rectPointUL, rectPointLR, Scalar(150, 100, 200), 3);
 		else
 			rectangle(outputImage, rectPointUL, rectPointLR, Scalar(0, 0, 255));
 	}

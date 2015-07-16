@@ -118,7 +118,6 @@ bool testSVM(String* positiveTestPath, String* negativTestPath, String* svmPath)
 		Mat descriptorsVector = Mat_<float>(descriptorsValues, true);
 		transpose(descriptorsVector, descriptorsVector);
 		descriptorsVector.row(0).copyTo(testData.row(testCount));
-		//descriptorsVector.col(0).copyTo(testData.col(testCount));
 		testCount++;
 
 	}

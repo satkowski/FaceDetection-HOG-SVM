@@ -10,7 +10,8 @@ int main(int argc, const char** argv)
 	// Creating a keymap for all the arguments that can passed to that programm
 	const String keyMap = "{help h usage ?  |   | show this message}"
 						  "{svm |   | path to the trained svm}"
-						  "{img image  |   | path for the image in wich it find the faces}";
+						  "{img image  |   | path for the image in wich it find the faces}"
+						  "{cam |  | for the activation of the webcam mode }";
 
 	// Reading the calling arguments
 	CommandLineParser parser(argc, argv, keyMap);
@@ -24,50 +25,113 @@ int main(int argc, const char** argv)
 
 	String svmPath = parser.get<String>("svm");
 	String imagePath = parser.get<String>("img");
+	bool camActivation = parser.has("cam");
 
-	if (imagePath == "")
+#pragma endregion
+
+#pragma region Initialization
+
+	Ptr<ml::SVM> svm = ml::SVM::create();
+	svm = svm->load<ml::SVM>(svmPath);
+
+	if (!svm->isTrained())
 	{
-		printf("There is no positivePath\n");
+		printf("The SVM isn't trained through this path: %s\n", svmPath);
 		return -1;
+	}
+
+	VideoCapture capture; 
+	Mat inputImage;
+	if (camActivation)
+	{
+		capture = VideoCapture(0);
+		if (!capture.isOpened())
+		{
+			printf("There is no cam to get the stream\n");
+			return -1;
+		}
+	}
+	else {
+		if (imagePath == "")
+		{
+			printf("There is no positivePath\n");
+			return -1;
+		}	
+
+		inputImage = imread(imagePath);
+		if (inputImage.empty())
+		{
+			printf("This is no image: %s\n", imagePath);
+			return -1;
+		}
 	}
 
 #pragma endregion
 
-#pragma region Show Image
+#pragma region Function Decesion
 
-	Mat outputImage = faceDetection(&imagePath, &svmPath);
+	if (camActivation)
+	{
+		int result = webcamDetection(&capture, svm);
+		if (result != 0)
+			return -1;
+		return 0;
+	}
+	else
+	{
+		int result = imageDetection(&inputImage, svm);
+		if (result != 0)
+			return -1;
+		return 0;
+	}
+
+#pragma endregion
+
+
+}
+
+int imageDetection(Mat* inputImage, Ptr<ml::SVM> svm)
+{
+#pragma region Detect in image
+
+	Mat outputImage = faceDetection(*inputImage, svm);
 	if (outputImage.empty())
 		return -1;
 
 	namedWindow("Face Detection");
 	imshow("Face Detection", outputImage);
 
-#pragma endregion
-
 	waitKey();
 	return 0;
+
+#pragma endregion
 }
 
-Mat faceDetection(String* imagePath, String* svmPath)
+int webcamDetection(VideoCapture* capture, Ptr<ml::SVM> svm)
+{
+#pragma region Detect in Webcam stream
+
+	while (true)
+	{
+		Mat frameImage;
+		*capture >> frameImage;
+		namedWindow("Webcame Face Detection");
+		imshow("Webcame Face Detection", faceDetection(frameImage, svm));
+
+		if (waitKey())
+			return -1;
+	}
+
+#pragma endregion
+}
+
+Mat faceDetection(Mat inputImage, Ptr<ml::SVM> svm)
 {
 #pragma region Initialization
 
-	Mat inputImage = imread(*imagePath);
-	if (inputImage.empty())
-	{
-		printf("This is no image: %s\n", *imagePath);
-		return Mat();
-	}
 	Mat greyImage;
 	cvtColor(inputImage, greyImage, CV_BGR2GRAY);
 
-	Ptr<ml::SVM> svm = ml::SVM::create();
-	svm = svm->load<ml::SVM>(*svmPath);
-	if (!svm->isTrained())
-	{
-		printf("The SVM isn't trained through this path: %s\n", *svmPath);
-		return Mat();
-	}
 	// Vector that saves the Point in whicht the match was and the preditcion value and the scale factor
 	std::vector<std::pair<Point, Vec2f> > positivePatches;
 

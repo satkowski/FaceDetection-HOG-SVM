@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVM_Test", "SVM_Test\SVM_Te
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVM_Train", "SVM_Train\SVM_Train.vcxproj", "{94BCAC99-2DD5-45B7-B43E-44CE0F107304}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVM_DETECTOR", "SVM_Detector\SVM_Detector.vcxproj", "{7D834085-7B3D-460D-B7AF-A894CFA8B17B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVM_Detector", "SVM_Detector\SVM_Detector.vcxproj", "{7D834085-7B3D-460D-B7AF-A894CFA8B17B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -16,7 +16,9 @@
 
 int main(int argc, const char** argv);
 
-cv::Mat faceDetection(cv::String* imagePath, cv::String* svmPath);
+int imageDetection(cv::Mat* inputImage, cv::Ptr<cv::ml::SVM> svm);
+int webcamDetection(cv::VideoCapture* capture, cv::Ptr<cv::ml::SVM> svm);
+cv::Mat faceDetection(cv::Mat inputImage, cv::Ptr<cv::ml::SVM> svm);
 // Sort from the lowest to the highest
 bool sortPreditcionVector(std::pair<cv::Point, cv::Vec2f> left, std::pair<cv::Point, cv::Vec2f> right);
 

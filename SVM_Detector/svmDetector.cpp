@@ -114,6 +114,7 @@ int webcamDetection(VideoCapture* capture, Ptr<ml::SVM> svm)
 	while (true)
 	{
 		*capture >> frameImage;
+		resize(frameImage, frameImage, Size(frameImage.cols * 1/2, frameImage.rows * 1/2));
 		imshow("Webcame Face Detection", faceDetection(&frameImage, svm));
 
 		if (waitKey(50) >= 0) 			

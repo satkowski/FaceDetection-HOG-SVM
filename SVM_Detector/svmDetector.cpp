@@ -86,8 +86,6 @@ int main(int argc, const char** argv)
 	}
 
 #pragma endregion
-
-
 }
 
 int imageDetection(Mat* inputImage, Ptr<ml::SVM> svm)
@@ -151,11 +149,11 @@ Mat faceDetection(Mat inputImage, Ptr<ml::SVM> svm)
 	while (scaledImage.rows >= WINDOW_SIZE && scaledImage.cols >= WINDOW_SIZE)
 	{
 #pragma omp parallel for
-		for (int cY = 0; cY < (scaledImage.rows - WINDOW_SIZE); cY += 5)
+		for (int cY = 0; cY < (scaledImage.rows - WINDOW_SIZE); cY += PATCH_PIXEL_MOVEMENT)
 		{
 			std::vector<float> descriptorsValues;
 			std::vector<Point> locations;
-			for (int cX = 0; cX < (scaledImage.cols - WINDOW_SIZE); cX += 5)
+			for (int cX = 0; cX < (scaledImage.cols - WINDOW_SIZE); cX += PATCH_PIXEL_MOVEMENT)
 			{
 				// Take the patch from the image
 				Mat imagePatch = scaledImage(Range(cY, cY + WINDOW_SIZE), Range(cX, cX + WINDOW_SIZE));

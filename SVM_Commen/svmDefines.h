@@ -7,8 +7,8 @@
 #define WINDOW_SIZE 64
 #define DESCRIPTOR_SIZE 1764
 // Standard = 0.8
-#define DOWNSCALE_FACTOR 0.8
+#define DOWNSCALE_FACTOR 0.91
 // Standard = 5
-#define PATCH_PIXEL_MOVEMENT 5
+#define PATCH_PIXEL_MOVEMENT 23
 
 #endif // SVMDEFINES_H

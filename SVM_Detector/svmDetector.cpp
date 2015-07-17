@@ -109,11 +109,11 @@ int webcamDetection(VideoCapture* capture, Ptr<ml::SVM> svm)
 {
 #pragma region Detect in Webcam stream
 
+	namedWindow("Webcame Face Detection");
 	Mat frameImage;
 	while (true)
 	{
 		*capture >> frameImage;
-		namedWindow("Webcame Face Detection");
 		imshow("Webcame Face Detection", faceDetection(&frameImage, svm));
 
 		if (waitKey(50) >= 0) 			
@@ -153,6 +153,7 @@ Mat faceDetection(Mat* inputImage, Ptr<ml::SVM> svm)
 		{
 			std::vector<float> descriptorsValues;
 			std::vector<Point> locations;
+#pragma omp parallel for
 			for (int cX = 0; cX < (scaledImage.cols - WINDOW_SIZE); cX += PATCH_PIXEL_MOVEMENT)
 			{
 				// Take the patch from the image

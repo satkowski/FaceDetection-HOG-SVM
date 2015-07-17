@@ -92,7 +92,7 @@ int imageDetection(Mat* inputImage, Ptr<ml::SVM> svm)
 {
 #pragma region Detect in image
 
-	Mat outputImage = faceDetection(*inputImage, svm);
+	Mat outputImage = faceDetection(inputImage, svm);
 	if (outputImage.empty())
 		return -1;
 
@@ -109,26 +109,26 @@ int webcamDetection(VideoCapture* capture, Ptr<ml::SVM> svm)
 {
 #pragma region Detect in Webcam stream
 
+	Mat frameImage;
 	while (true)
 	{
-		Mat frameImage;
 		*capture >> frameImage;
 		namedWindow("Webcame Face Detection");
-		imshow("Webcame Face Detection", faceDetection(frameImage, svm));
+		imshow("Webcame Face Detection", faceDetection(&frameImage, svm));
 
-		if (waitKey())
-			return -1;
+		if (waitKey(50) >= 0) 			
+			return 0;
 	}
 
 #pragma endregion
 }
 
-Mat faceDetection(Mat inputImage, Ptr<ml::SVM> svm)
+Mat faceDetection(Mat* inputImage, Ptr<ml::SVM> svm)
 {
 #pragma region Initialization
 
 	Mat greyImage;
-	cvtColor(inputImage, greyImage, CV_BGR2GRAY);
+	cvtColor(*inputImage, greyImage, CV_BGR2GRAY);
 
 	// Vector that saves the Point in whicht the match was and the preditcion value and the scale factor
 	std::vector<std::pair<Point, Vec2f> > positivePatches;
@@ -182,7 +182,7 @@ Mat faceDetection(Mat inputImage, Ptr<ml::SVM> svm)
 	// Sort the vector
 	std::sort(positivePatches.begin(), positivePatches.end(), sortPreditcionVector);
 
-	Mat outputImage = inputImage;
+	Mat outputImage = *inputImage;
 	std::cout << "Begin the drawing (" << (clock() - beginTime) / (float)CLOCKS_PER_SEC << ") ...";
 	for (std::vector<std::pair<Point, Vec2f> >::iterator patches = positivePatches.begin(); patches != positivePatches.end(); ++patches)
 	{
